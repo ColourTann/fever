@@ -33,7 +33,7 @@
 					var eventHolder = response[i];
 					var eid = eventHolder.id;
 					var event = eventHolder.event;
-					console.log(event);
+					receive(event);
 					//deal with the events here
 					
 					if (eid > maxId) {
@@ -41,7 +41,7 @@
 					}
 				}
 				// Listen to the future events
-				//console.log('Recursing on ' + maxId);
+				console.log('Recursing on ' + maxId);
 				listenEvents( maxId );
 				}
 			});
@@ -97,16 +97,22 @@
 		        }
 			});
     	});
-	    function sendThing(data){
-	    	rest.request('POST', 'games/' + game + '/sessions/' + sessionId+"/turn", function(status, response) {}, data);
+
+	    function receive(event){
+	    	var data = event.data;
+	    	console.log(event);
+	    	switch(event.messageType){
+	    		case MESSAGE_INFECT:
+	    			GRID.tiles[data.x][data.y].infect(false, false);
+	    		break;
+	    	}
+	    }
+
+	    function sendMessage(messageType, message){
+	    	rest.request('POST', 'games/' + game + '/sessions/' + sessionId+"/turn", function(status, response) {}, 
+	    		{messageType:messageType, data:message});
 	    }
 
     </script>
 </head>
-<body>
-	
-	<script>
-		
-	 </script>
-</body>
 </html>

@@ -53,12 +53,12 @@ var Grid = function(){
 	grid.clickOnTile= function(tile, leftButton){
 		switch(STATE.state){
 			case PLACING_ABILITY:
-				tile.infect(true);
+				tile.infect(true, true);
 				STATE.startGrowing();
 				break;
 			case GROWING:
 				if(tile.isAdjacentToGrowing()){
-					tile.infect(false);
+					tile.infect(false, true);
 					this.tilesToInfect--;
 					if(this.tilesToInfect==0){
 						this.startGrowing();

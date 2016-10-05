@@ -28,3 +28,5 @@ COLOUR.immune = 0xfff48c;
 COLOUR.grid = 0x415463; 
 COLOUR.hub = 0x643287; 
 COLOUR.dark = 0x221111; 
+
+var MESSAGE_INFECT = "infect";

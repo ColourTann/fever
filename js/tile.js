@@ -34,7 +34,6 @@ var Tile = function(x, y){
 	tile.readyToGrow = function(){
 		this.growing = true;
 		this.showInner(true);
-		sendThing({test:1})
 	}
 
 	tile.stopGrowth = function(){
@@ -79,10 +78,13 @@ var Tile = function(x, y){
 		return result;
 	}
 
-	tile.infect = function(initial){
+	tile.infect = function(initial, send){
 		this.infected=true;
 		if(!initial) this.grow=true;
 		this.infectSprite.tint=COLOUR.bacteria;
+		if(send) {
+			sendMessage(MESSAGE_INFECT, {x:x, y:y});
+		}
 	}
 
 	tile.isAdjacentToGrowing = function(){
