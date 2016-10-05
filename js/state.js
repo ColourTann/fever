@@ -6,5 +6,8 @@ var State = function(){
 		this.state = GROWING;
 		GRID.startGrowing();
 	}
+	state.finishGrowing = function(){
+		this.state=PICKING_ABILITY;
+	}
 	return state;
 }

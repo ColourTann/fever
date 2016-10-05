@@ -2,9 +2,14 @@
 var Grid = function(){
 	var grid = [];
 	var allTiles = [];
+	var allNodes = [];
 	var tiles = new Array(GRID_WIDTH);
+	var nodes = new Array(GRID_WIDTH+1);
 	for(var i=0;i<tiles.length;i++){
 		tiles[i] = new Array(GRID_HEIGHT);
+	}
+	for(var i=0;i<tiles.length+1;i++){
+		nodes[i] = new Array(GRID_HEIGHT);
 	}
 	grid.allTiles = allTiles;
 	grid.tiles = tiles;
@@ -16,7 +21,7 @@ var Grid = function(){
 	grid.clickRegion = clickRegion;
 
 	grid.group=group;
-	  for(var x=0;x<TILES_ACROSS;x++){
+	for(var x=0;x<TILES_ACROSS;x++){
         for(var y=0;y<TILES_DOWN;y++){
 			if((x==0||x==TILES_ACROSS-1) && (y==0||y==TILES_DOWN-1)) continue;
             var tile = new Tile(x, y);
@@ -25,6 +30,18 @@ var Grid = function(){
             group.addChild(tile.sprite);
         }    
     }
+
+    for(var x=0;x<TILES_ACROSS+1;x++){
+        for(var y=0;y<TILES_DOWN+1;y++){
+			if((x==0||x==TILES_ACROSS) && (y==0||y==TILES_DOWN)) continue;
+            var node = new Node(x, y);
+            nodes[x][y] = node;
+            allNodes.push(tile);
+        }    
+    }
+   
+
+
     clickRegion.inputEnabled = true;
 	clickRegion.events.onInputDown.add(listener, grid);
 
@@ -35,26 +52,21 @@ var Grid = function(){
 
 	grid.clickOnTile= function(tile, leftButton){
 		switch(STATE.state){
+			case PLACING_ABILITY:
+				tile.infect(true);
+				STATE.startGrowing();
+				break;
 			case GROWING:
-				tile.infect(false);
-			break;
-		}
+				if(tile.isAdjacentToGrowing()){
+					tile.infect(false);
+					this.tilesToInfect--;
+					if(this.tilesToInfect==0){
+						this.startGrowing();
+					}
+				}
+				break;
 
-
-		if(leftButton){
-			tile.infect(true);	
 		}
-		else{
-			
-		}
-		//console.log(tile.x+":"+tile.y+": clicked!")
-		
-		if(STATE.state == PLACING_ABILITY){
-			
-			/*STATE.state = GROWING;
-			console.log(STATE)
-			STATE.startGrowing();*/
-		}	
 	}
 
 	grid.startGrowing = function(){
@@ -67,12 +79,16 @@ var Grid = function(){
 		for(var i=0;i<allTiles.length;i++){
 			var tile = allTiles[i];
 			if(tile.infected && !tile.grown){
-				console.log(tile.grow);
-				console.log(tile);
 				this.originateGrowth(tile);
 				return;
 			}
 		}
+		for(var i=0;i<allTiles.length;i++){
+			allTiles[i].grown=false;
+			allTiles[i].growing=false;
+		}
+		this.origin=null;
+		STATE.finishGrowing();
 	}
 
 	grid.originateGrowth = function(tile){
@@ -81,8 +97,14 @@ var Grid = function(){
 		for(var i=0;i<adj.length;i++){
 			adj[i].readyToGrow();
 		}
+		this.tilesToInfect = Math.floor(adj.length/3)+2;
 	}
 	
+	grid.setup = function(){
+		nodes[5][3].makeCenter();
+	    nodes[3][5].makeCenter();
+	    nodes[7][5].makeCenter();
+	}
 
 	function listener(test, pointer){
 		var clickX = GAME.input.x-group.x;
@@ -91,7 +113,6 @@ var Grid = function(){
 		var tileY = Math.floor(clickY / (TILE_SIZE-1));
 		var tile = tiles[tileX][tileY];
 		if(tile!=null){
-			//console.log(this);
 			this.clickOnTile(tile, GAME.input.activePointer.leftButton.isDown);
 		}
 	}

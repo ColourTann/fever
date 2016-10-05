@@ -7,28 +7,40 @@ var Tile = function(x, y){
 	tile.y=y;
 	var sprite = GAME.add.sprite(x*(TILE_SIZE-1), y*(TILE_SIZE-1), 'tile');
 	sprite.tint = COLOUR.grid;
-	var innerSprite = GAME.add.sprite(1, 1, 'pixel');
-	tile.innerSprite = innerSprite;
-	innerSprite.width = TILE_SIZE-2;
-	innerSprite.height = TILE_SIZE-2;
-	sprite.addChild(innerSprite);
+	var infectSprite = GAME.add.sprite(1, 1, 'pixel');
+	tile.infectSprite = infectSprite;
+	infectSprite.width = TILE_SIZE-2;
+	infectSprite.height = TILE_SIZE-2;
+	sprite.addChild(infectSprite);
 	
+	var innerSprite = GAME.add.sprite(2, 2, 'pixel');
+	innerSprite.tint=COLOUR.grid;
+	innerSprite.alpha=0;
+	tile.innerSprite=innerSprite;
     tile.sprite = sprite;
+    sprite.addChild(innerSprite);
+
 	tile.setColour = function(colour){
-		this.innerSprite.tint = colour;
+		this.infectSprite.tint = colour;
 	}
+
+	tile.showInner = function(show){
+		this.innerSprite.alpha=show?1:0;
+	}
+
 	tile.setColour(COLOUR.dark);
 
 
 	tile.readyToGrow = function(){
 		this.growing = true;
-		this.innerSprite.tint=COLOUR.hub;
+		this.showInner(true);
+		sendThing({test:1})
 	}
 
 	tile.stopGrowth = function(){
 		this.growing = false;
 		this.grown = true;
-		this.innerSprite.tint=COLOUR.bacteria;	
+		this.showInner(false);
 	}
 
 	tile.getContiguousInfected = function(){
@@ -57,7 +69,7 @@ var Tile = function(x, y){
 		for(var dx=-1;dx<=1;dx++){
 			for(var dy=-1;dy<=1;dy++){
 				if(Math.abs(dx)==Math.abs(dy))continue;
-				
+
 				var potential = GRID.getTile(this.x+dx, this.y+dy)
 				if(potential!=null){
 					result.push(potential);
@@ -70,7 +82,15 @@ var Tile = function(x, y){
 	tile.infect = function(initial){
 		this.infected=true;
 		if(!initial) this.grow=true;
-		this.innerSprite.tint=COLOUR.bacteria;
+		this.infectSprite.tint=COLOUR.bacteria;
+	}
+
+	tile.isAdjacentToGrowing = function(){
+		var adj = this.getAdjacent();
+		for(var i=0;i<adj.length;i++){
+			if(adj[i].growing) return true;
+		}
+		return false;
 	}
 
 	return tile;

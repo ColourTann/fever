@@ -15,12 +15,10 @@ var Ability = function(image, colour){
 	buttonSprite.inputEnabled = true;
 	buttonSprite.events.onInputDown.add(buttonListener, ability);
 	function buttonListener(){
-		STATE.startGrowing();
-		/*if(STATE.state==PICKING_ABILITY){
-			console.log("picked");
+		
+		if(STATE.state==PICKING_ABILITY){
 			STATE.state = PLACING_ABILITY;
-
-		}*/
+		}
 	}
 
 	return ability;
