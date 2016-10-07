@@ -1,8 +1,9 @@
 "use strict";
 var Grid = function(){
-	var grid = [];
+	var grid = {};
 	var allTiles = [];
 	var allNodes = [];
+	var allCells = [];
 	var tiles = new Array(GRID_WIDTH);
 	var nodes = new Array(GRID_WIDTH+1);
 	for(var i=0;i<tiles.length;i++){
@@ -13,13 +14,13 @@ var Grid = function(){
 	}
 	grid.allTiles = allTiles;
 	grid.tiles = tiles;
+	grid.allCells = allCells;
 	var group = GAME.add.group();
 	var clickRegion = GAME.add.sprite(-1,-1,"blank");
 	group.addChild(clickRegion);
 	clickRegion.width = GRID_WIDTH;
 	clickRegion.height = GRID_HEIGHT;
 	grid.clickRegion = clickRegion;
-
 	grid.group=group;
 	for(var x=0;x<TILES_ACROSS;x++){
         for(var y=0;y<TILES_DOWN;y++){
@@ -58,12 +59,41 @@ var Grid = function(){
 				STATE.startGrowing();
 				break;
 			case GROWING:
+				if(tile.infected){
+					if(tile.new) {
+						return;
+					}
+					if(tile.grown){
+						return;
+					}
+					if(!tile.growing && !this.alreadyInfected){
+						//retarget
+						console.log("retarget");
+						var toUngrow = this.origin.getContiguousInfected();
+						for (var i = 0; i < toUngrow.length; i++) {
+							console.log(toUngrow[i].x+":"+toUngrow[i].y);
+							toUngrow[i].stopGrowth();
+							toUngrow[i].grown=false;
+						}
+
+						this.origin = tile;
+						console.log("starting:"+this.origin.x+":"+this.origin.y)
+						this.startGrowing(tile);
+
+						return;
+					}
+				}
+				
 				if(tile.isAdjacentToGrowing()){
 					tile.infect(false, true);
+					tile.new=true;
+					this.alreadyInfected = true;
 					this.tilesToInfect--;
 					if(this.tilesToInfect==0){
+						this.stopGrowing();
 						this.startGrowing();
 					}
+
 				}
 				break;
 		}
@@ -78,21 +108,60 @@ var Grid = function(){
 		if(!myTurn) return;
 		switch(STATE.state){
 			case PLACING_ABILITY:
-				node.spawn();
-				STATE.state=MOVING;
+				if(!node.center) return;
+				node.spawn(true);
+				this.readyAllCells();
+				this.selectFreeCell();
 				break;
 			case MOVING:
-
-			break;
+				if(this.currentCell.moveTo(node, true)){
+					this.selectFreeCell();
+				}
+				break;
 		}
 	}
 
-	grid.startGrowing = function(){
+	grid.readyAllCells = function(){
+		for (var i = 0; i < allCells.length; i++) {
+			allCells[i].moved=false;
+		}
+	}
+
+	grid.selectFreeCell = function(){
+		for (var i = 0; i < allCells.length; i++) {
+			if(!allCells[i].moved){
+				this.currentCell = allCells[i];
+				this.currentCell.select(true);
+				STATE.state = MOVING;
+				return;
+			}
+		}
+		this.cellAttack();
+	}
+
+	grid.cellAttack = function(){
+		for (var i = 0; i < allCells.length; i++) {
+			var cell = allCells[i];
+			cell.attack();
+		}
+		STATE.finishTurn();
+	}
+
+	grid.stopGrowing = function(){
 		if(this.origin!=null){
 			var adj = this.origin.getContiguousInfected();
 			for(var i=0;i<adj.length;i++){
 				adj[i].stopGrowth();
 			}
+		}
+	}
+
+
+	grid.startGrowing = function(tile){
+		this.alreadyInfected=false;
+		if(tile!=null){
+			this.originateGrowth(tile);
+			return;
 		}
 		for(var i=0;i<allTiles.length;i++){
 			var tile = allTiles[i];
@@ -104,6 +173,7 @@ var Grid = function(){
 		for(var i=0;i<allTiles.length;i++){
 			allTiles[i].grown=false;
 			allTiles[i].growing=false;
+			allTiles[i].new=false;
 		}
 		this.origin=null;
 		STATE.finishGrowing();

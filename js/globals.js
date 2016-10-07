@@ -12,6 +12,7 @@ var PICKING_ABILITY = 5;
 var PLACING_ABILITY = 6;
 var GROWING = 7;
 var MOVING = 8;
+var WAITING = -1;
 
 var ABILITY_INFECT = 5;
 var ABILITY_SPAWN = 10;
@@ -27,7 +28,7 @@ var ABILITY_SIZE = 7;
 
 var X_GAP = (GAME_WIDTH - GRID_WIDTH - ABILITY_SIZE)/3;
 var SCALE = 15;
-var COLOUR =[];
+var COLOUR ={};
 
 COLOUR.bacteria = 0x7b2323; 
 COLOUR.immune = 0xfff48c; 
@@ -36,4 +37,7 @@ COLOUR.hub = 0x643287;
 COLOUR.dark = 0x221111; 
 
 var MESSAGE_INFECT = "infect";
+var MESSAGE_SPAWN = "spawn";
+var MESSAGE_MOVE = "move";
+var MESSAGE_TREAT = "treat";
 var MESSAGE_STATE = "state";

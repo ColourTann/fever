@@ -1,14 +1,16 @@
 "use strict";
 var State = function(){
-	var state = [];
-	state.state=PICKING_ABILITY;
+	var state = {};
 	state.startGrowing = function(){
 		this.state = GROWING;
 		GRID.startGrowing();
 	}
 	state.finishGrowing = function(){
-		this.state=PICKING_ABILITY;
-		sendMessage("state", {}, true);
+		this.finishTurn();
+	}
+	state.finishTurn = function(){
+		toggleTurn();
+		sendMessage("state", {}, true);	
 	}
 	
 	return state;

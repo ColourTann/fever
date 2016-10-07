@@ -1,6 +1,6 @@
 "use strict";
 var Tile = function(x, y){
-	var tile = [];
+	var tile = {};
 	tile.grow=false;
 	tile.infected = false;
 	tile.x=x;
@@ -85,6 +85,12 @@ var Tile = function(x, y){
 		if(send) {
 			sendMessage(MESSAGE_INFECT, {x:x, y:y});
 		}
+	}
+
+	tile.treat = function(send){
+		this.infected = false;
+		this.infectSprite.tint = COLOUR.dark;
+		if(send)sendMessage(MESSAGE_TREAT, {x:x, y:y});
 	}
 
 	tile.isAdjacentToGrowing = function(){

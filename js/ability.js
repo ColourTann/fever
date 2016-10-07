@@ -1,6 +1,6 @@
 "use strict";
 var Ability = function(abilityType){
-	var ability = []
+	var ability = {};
 	ability.abilityType = abilityType;
 	var colour = abilityType<10?COLOUR.bacteria:COLOUR.immune;
 	var buttonSprite = GAME.add.sprite(0,0,"button");
@@ -26,11 +26,10 @@ var Ability = function(abilityType){
 	buttonSprite.inputEnabled = true;
 	buttonSprite.events.onInputDown.add(buttonListener, ability);
 	function buttonListener(){
-		
+		console.log(STATE.state);
 		if(STATE.state==PICKING_ABILITY){
 			STATE.state = PLACING_ABILITY;
 			STATE.currentAbility = this.abilityType;
-			console.log(STATE.currentAbility);
 		}
 	}
 

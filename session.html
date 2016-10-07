@@ -7,12 +7,15 @@
     <script src="../js/rest.js"></script>
     <script src="../js/login-check.js"></script>
     <script src="js/phaser.min.js"></script>
+    <script src="js/cell.js"></script>
     <script src="js/globals.js"></script>
     <script src="js/tile.js"></script>
     <script src="js/node.js"></script>
     <script src="js/grid.js"></script>
     <script src="js/ability.js"></script>
     <script src="js/state.js"></script>
+    
+
     <script>
     	"use strict";
     	if (window.location.search.indexOf("?id=") !== 0) {
@@ -21,7 +24,7 @@
 		var game = 'fever';
     	var sessionId = window.location.search.substr("?id=".length);
     	var userId = -1;
-    	
+    	var loadedImages = false;
     	
     	function listenEvents( afterId ) {
 			//console.log('listenEvents('+afterId+')');
@@ -61,6 +64,7 @@
 						if(player.user.userId == user.userId){
 							infector = response.players[i].isCurrent;
 							console.log("is infector: "+infector);
+							//while(!loadedImages){} //bad!
 							setup(infector);
 							myTurn = infector;
 						}
@@ -81,15 +85,15 @@
 		            for(var i=0;i<sprites.length;i++){
 		                GAME.load.image(sprites[i], "assets/"+sprites[i]+".png");    
 		            }
+		            loadedImages=true;
 		        }
 
 		        function setup(infector){
 		        	GRID = new Grid();
 		            GRID.setup();
 		            var ability = new Ability(infector?ABILITY_INFECT:ABILITY_SPAWN);		            	
-		            
-
 		            STATE = new State();
+		            STATE.state=infector?PICKING_ABILITY:WAITING;
 		        }
 		        function create () {
 		            // scale the game 4x
@@ -125,13 +129,30 @@
 	    		case MESSAGE_INFECT:
 	    			GRID.tiles[data.x][data.y].infect(false, false);
 	    		break;
+	    		case MESSAGE_TREAT:
+	    			GRID.tiles[data.x][data.y].treat(false);
+	    		break;
+	    		case MESSAGE_SPAWN:
+	    			GRID.getNode(data.x,data.y).spawn(false);
+	    		break;
+	    		case MESSAGE_MOVE:
+	    			GRID.getNode(data.prevX,data.prevY).cell.moveTo(GRID.getNode(data.toX,data.toY), false);
+	    		break;
 	    		case MESSAGE_STATE:
-	    			myTurn = !myTurn;
-	    			if(myTurn) console.log("ITS MY TURN NOW");
+	    			toggleTurn();
 	    		break;
 	    	}
 	    }
-
+	    function toggleTurn(){
+	    	myTurn = !myTurn;
+	    	if(myTurn){
+	    		console.log("my turn");	
+	    	}
+	    	else{
+	    		console.log("their turn");		
+	    	}
+	    	STATE.state = myTurn?PICKING_ABILITY:WAITING;	
+	    }
 	    function sendMessage(messageType, message, done){
 	    	if(done){
 	    		message.done=true;
