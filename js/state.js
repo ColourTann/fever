@@ -8,6 +8,8 @@ var State = function(){
 	}
 	state.finishGrowing = function(){
 		this.state=PICKING_ABILITY;
+		sendMessage("state", {}, true);
 	}
+	
 	return state;
 }

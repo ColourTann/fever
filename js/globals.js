@@ -3,12 +3,18 @@ var GAME;
 
 var GRID;
 var STATE;
+var CURRENT_ABILITY;
+
+var infector;
+var myTurn;
 
 var PICKING_ABILITY = 5;
 var PLACING_ABILITY = 6;
 var GROWING = 7;
+var MOVING = 8;
 
-
+var ABILITY_INFECT = 5;
+var ABILITY_SPAWN = 10;
 
 var GAME_WIDTH = 60;
 var GAME_HEIGHT = 40;
@@ -30,3 +36,4 @@ COLOUR.hub = 0x643287;
 COLOUR.dark = 0x221111; 
 
 var MESSAGE_INFECT = "infect";
+var MESSAGE_STATE = "state";

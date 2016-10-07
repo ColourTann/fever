@@ -14,7 +14,7 @@ var Grid = function(){
 	grid.allTiles = allTiles;
 	grid.tiles = tiles;
 	var group = GAME.add.group();
-	var clickRegion = GAME.add.sprite(0,0,"blank");
+	var clickRegion = GAME.add.sprite(-1,-1,"blank");
 	group.addChild(clickRegion);
 	clickRegion.width = GRID_WIDTH;
 	clickRegion.height = GRID_HEIGHT;
@@ -51,6 +51,7 @@ var Grid = function(){
 	}
 
 	grid.clickOnTile= function(tile, leftButton){
+		if(!myTurn) return;
 		switch(STATE.state){
 			case PLACING_ABILITY:
 				tile.infect(true, true);
@@ -65,7 +66,24 @@ var Grid = function(){
 					}
 				}
 				break;
+		}
+	}
 
+	grid.getNode = function(x, y){
+		if(x>GRID_WIDTH||x<0) return null;
+		return nodes[x][y];
+	}
+
+	grid.clickOnNode= function(node, leftButton){
+		if(!myTurn) return;
+		switch(STATE.state){
+			case PLACING_ABILITY:
+				node.spawn();
+				STATE.state=MOVING;
+				break;
+			case MOVING:
+
+			break;
 		}
 	}
 
@@ -109,11 +127,43 @@ var Grid = function(){
 	function listener(test, pointer){
 		var clickX = GAME.input.x-group.x;
 		var clickY = GAME.input.y-group.y;
+		if(STATE.currentAbility == ABILITY_INFECT){
+			this.checkTileClicked(clickX, clickY);
+		}
+
+		if(STATE.currentAbility == ABILITY_SPAWN){
+			this.checkNodeClicked(clickX, clickY);
+		}
+
+
+
+		
+	}
+
+	grid.checkTileClicked = function(clickX, clickY){
+		
 		var tileX = Math.floor(clickX / (TILE_SIZE-1));
 		var tileY = Math.floor(clickY / (TILE_SIZE-1));
-		var tile = tiles[tileX][tileY];
+		var tile = this.getTile(tileX, tileY);
 		if(tile!=null){
 			this.clickOnTile(tile, GAME.input.activePointer.leftButton.isDown);
+		}
+	}
+
+	grid.checkNodeClicked = function(clickX, clickY){
+		
+		clickY += .5; //hacky thing
+		//console.log(clickX+":"+clickY);
+		if(clickX%(TILE_SIZE-1) == 2 || clickY%(TILE_SIZE-1) == 2){ //gotta make this code better at some point
+			return;
+		}
+		
+		var nodeX = Math.floor((clickX+1) / (TILE_SIZE-1));
+		var nodeY = Math.floor((clickY+1) / (TILE_SIZE-1));
+		//console.log(clickX / (TILE_SIZE-1)+":"+clickY / (TILE_SIZE-1));
+		var node = this.getNode(nodeX, nodeY);
+		if(node!=null){
+			this.clickOnNode(node, GAME.input.activePointer.leftButton.isDown);
 		}
 	}
 	

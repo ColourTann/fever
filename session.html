@@ -25,6 +25,8 @@
     	
     	function listenEvents( afterId ) {
 			//console.log('listenEvents('+afterId+')');
+
+
 			rest.request('GET', 'games/'+game+'/sessions/'+sessionId+'/events?after-event-id=' + afterId, function(status, response) {
 			   if (status == 200) { //200 is success
 				// Treat the events! Should order them first, in theory.
@@ -41,18 +43,32 @@
 					}
 				}
 				// Listen to the future events
-				console.log('Recursing on ' + maxId);
+				//console.log('Recursing on ' + maxId);
 				listenEvents( maxId );
 				}
 			});
 		}
     	
-    
+    	
+
 	    $(function() {
 			checkLogin(function(user) {
 				userId = user.userId;
 				// If you're logged in, fetch this session + environment, and start listening for events
 				rest.request('GET', 'games/' + game + '/sessions/' + sessionId, function(status, response) {
+					for (var i=0;i<response.players.length;i++){
+						var player = response.players[i];
+						if(player.user.userId == user.userId){
+							infector = response.players[i].isCurrent;
+							console.log("is infector: "+infector);
+							setup(infector);
+							myTurn = infector;
+						}
+						
+					}
+				
+					
+					
 					if (status == 200) {
 						listenEvents( response.toEventId );
 					}
@@ -67,7 +83,14 @@
 		            }
 		        }
 
-		        
+		        function setup(infector){
+		        	GRID = new Grid();
+		            GRID.setup();
+		            var ability = new Ability(infector?ABILITY_INFECT:ABILITY_SPAWN);		            	
+		            
+
+		            STATE = new State();
+		        }
 		        function create () {
 		            // scale the game 4x
 		            GAME.canvas.oncontextmenu = function (e) { e.preventDefault(); }
@@ -82,10 +105,7 @@
 
 		            GAME.stage.backgroundColor = COLOUR.dark;
 
-		            GRID = new Grid();
-		            GRID.setup();
-		            var ability = new Ability("add", COLOUR.immune);
-		            STATE = new State();
+		            
 		           
 		           
 		        }
@@ -105,10 +125,17 @@
 	    		case MESSAGE_INFECT:
 	    			GRID.tiles[data.x][data.y].infect(false, false);
 	    		break;
+	    		case MESSAGE_STATE:
+	    			myTurn = !myTurn;
+	    			if(myTurn) console.log("ITS MY TURN NOW");
+	    		break;
 	    	}
 	    }
 
-	    function sendMessage(messageType, message){
+	    function sendMessage(messageType, message, done){
+	    	if(done){
+	    		message.done=true;
+	    	}
 	    	rest.request('POST', 'games/' + game + '/sessions/' + sessionId+"/turn", function(status, response) {}, 
 	    		{messageType:messageType, data:message});
 	    }

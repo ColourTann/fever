@@ -11,7 +11,12 @@ var Node = function(x, y){
 		GRID.group.addChild(sprite);
 		this.centerSprite=sprite;
 	}
-
+	node.spawn = function(){
+		var sprite = GAME.add.sprite(this.x*(TILE_SIZE-1),this.y*(TILE_SIZE-1),"pixel");
+		sprite.tint=COLOUR.immune;
+		this.spawnSprite = sprite;
+		GRID.group.addChild(sprite);
+	}
 	return node;
 
 }
